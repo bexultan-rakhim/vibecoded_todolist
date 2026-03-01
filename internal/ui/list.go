@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -86,40 +85,36 @@ func viewportBounds(cursorIdx, total, height int) (int, int) {
 
 // renderRow formats a single task row with the appropriate style.
 func renderRow(t task.Task, focused bool, width int) string {
-	// Choose the status icon style.
-	var icon string
-	if t.IsDone() {
-		icon = StatusIconDone.Render(t.Status.Icon())
-	} else {
-		icon = StatusIconTodo.Render(t.Status.Icon())
-	}
-
-	// Choose the cursor glyph.
-	var cursor string
-	if focused {
-		cursor = CursorIndicator.Render(cursorSymbol)
-	} else {
-		cursor = cursorSymbolNone
-	}
-
-	// Build the text content: truncate long titles to fit the row width.
-	titleWidth := width - lipgloss.Width(cursor) - lipgloss.Width(icon) - 2
-	title := truncate(t.Title, titleWidth)
-
-	// Compose the raw row content.
-	content := fmt.Sprintf("%s%s %s", cursor, icon, title)
-
-	// Apply the correct row style.
+// Select the row style first so strikethrough/colour applies uniformly.
+	var rowStyle lipgloss.Style
 	switch {
 	case focused && t.IsDone():
-		return RowDoneFocused.Width(width).Render(content)
+		rowStyle = RowDoneFocused
 	case focused:
-		return RowFocused.Width(width).Render(content)
+		rowStyle = RowFocused
 	case t.IsDone():
-		return RowDone.Width(width).Render(content)
+		rowStyle = RowDone
 	default:
-		return RowNormal.Width(width).Render(content)
+		rowStyle = RowNormal
 	}
+
+	// Plain-text cursor glyph — no styling yet.
+	cursorGlyph := cursorSymbolNone
+	if focused {
+		cursorGlyph = cursorSymbol
+	}
+
+	// Plain-text status icon — no styling yet.
+	icon := t.Status.Icon()
+
+	// Compute how much space remains for the title after the fixed-width prefix.
+	prefixWidth := len([]rune(cursorGlyph)) + len([]rune(icon)) + 1 // +1 for space
+	titleWidth := width - prefixWidth - 2                            // -2 for row padding
+	title := truncate(t.Title, titleWidth)
+
+	// Compose as plain text, then style everything in one shot.
+	content := cursorGlyph + icon + " " + title
+	return rowStyle.Width(width).Render(content)
 }
 
 // renderEmptyState displays a centred tip when no tasks exist.
