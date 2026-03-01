@@ -6,6 +6,7 @@ package model
 import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"todo/internal/history"
 	"todo/internal/navigation"
 	"todo/internal/repository"
 	"todo/internal/task"
@@ -72,6 +73,10 @@ type Model struct {
 	Width  int
 	Height int
 
+	// History is the undo/redo stack. Only Delete and Edit mutations are
+	// tracked. It is in-memory only and resets on each app launch.
+	History *history.Stack
+
 	// Err holds the last error encountered (e.g. a failed save). When non-nil
 	// the footer renders an error message instead of the keymap hint.
 	Err error
@@ -96,6 +101,7 @@ func New(repo repository.Repository) (Model, error) {
 		Mode:   ModeList,
 		Input:  input,
 		Repo:   repo,
+		History: history.New(),
 	}, nil
 }
 
