@@ -24,7 +24,7 @@ func Render(m model.Model) string {
 
 	// Guard against zero dimensions during startup before the first
 	// tea.WindowSizeMsg has been received.
-	if w == 0 || h == 0 {
+	if w <= 0 || h <= 0 {
 		return ""
 	}
 
@@ -34,5 +34,6 @@ func Render(m model.Model) string {
 	body := RenderList(m.Tasks, m.Cursor, w, bodyHeight)
 	footer := RenderFooter(m, w)
 
-	return lipgloss.JoinVertical(lipgloss.Left, header, body, footer)
+	base := lipgloss.JoinVertical(lipgloss.Left, header, body, footer)
+	return RenderModal(m, base)
 }

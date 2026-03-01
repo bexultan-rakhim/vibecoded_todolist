@@ -4,9 +4,22 @@ import (
 	"strings"
 	"testing"
 
+	"todo/internal/model"
 	"todo/internal/navigation"
+	"todo/internal/repository"
 	"todo/internal/task"
 )
+
+// newTestModel creates a minimal Model for UI tests.
+func newTestModel(t *testing.T) (model.Model, *repository.InMemoryRepository) {
+	t.Helper()
+	repo := repository.NewInMemoryRepository()
+	m, err := model.New(repo)
+	if err != nil {
+		t.Fatalf("model.New: %v", err)
+	}
+	return m, repo
+}
 
 // --- truncate ---
 
@@ -171,5 +184,54 @@ func TestRenderHeader_ShowsCorrectCounts(t *testing.T) {
 	}
 	if !strings.Contains(result, "1 todo") {
 		t.Errorf("expected '1 todo' in header, got:\n%s", result)
+	}
+}
+
+// --- RenderModal ---
+
+func TestRenderModal_ListMode_ReturnsBgUnchanged(t *testing.T) {
+	m, _ := newTestModel(t)
+	m.Mode = model.ModeList
+	bg := "background content"
+
+	result := RenderModal(m, bg)
+	if result != bg {
+		t.Errorf("expected bg content unchanged in ModeList, got:\n%s", result)
+	}
+}
+
+func TestRenderModal_AddMode_ContainsNewTaskTitle(t *testing.T) {
+	m, _ := newTestModel(t)
+	m.Mode = model.ModeAdd
+	m.Width = 120
+	m.Height = 40
+
+	result := RenderModal(m, "bg")
+	if !strings.Contains(result, "New Task") {
+		t.Errorf("expected 'New Task' in modal, got:\n%s", result)
+	}
+}
+
+func TestRenderModal_EditMode_ContainsEditTitle(t *testing.T) {
+	m, _ := newTestModel(t)
+	m.Mode = model.ModeEdit
+	m.Width = 120
+	m.Height = 40
+
+	result := RenderModal(m, "bg")
+	if !strings.Contains(result, "Edit Task") {
+		t.Errorf("expected 'Edit Task' in modal, got:\n%s", result)
+	}
+}
+
+func TestRenderModal_ContainsKeyHints(t *testing.T) {
+	m, _ := newTestModel(t)
+	m.Mode = model.ModeAdd
+	m.Width = 120
+	m.Height = 40
+
+	result := RenderModal(m, "bg")
+	if !strings.Contains(result, "esc to cancel") {
+		t.Errorf("expected key hints in modal, got:\n%s", result)
 	}
 }
