@@ -31,7 +31,7 @@ A keyboard-centric TUI todo app built with Go and the [Bubble Tea](https://githu
 ## Install
 
 ```bash
-git clone https://github.com/yourname/godo
+git clone https://github.com/bexultan-rakhim/vibecoded_todolist godo
 cd godo
 go mod tidy
 go build -o godo .
