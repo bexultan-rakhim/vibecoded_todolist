@@ -10,6 +10,7 @@ import (
 	"todo/internal/navigation"
 	"todo/internal/repository"
 	"todo/internal/task"
+	"todo/internal/ui"
 )
 
 // ViewMode represents the current interaction state of the application.
@@ -110,4 +111,11 @@ func New(repo repository.Repository) (Model, error) {
 // synchronously in New() before the program starts.
 func (m Model) Init() tea.Cmd {
 	return nil
+}
+
+// View is the Bubble Tea lifecycle method that renders the full UI on every
+// update cycle. It delegates entirely to the ui package — the model itself
+// has no rendering logic. This keeps the View a pure function of state.
+func (m Model) View() string {
+	return ui.Render(m)
 }
